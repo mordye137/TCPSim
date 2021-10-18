@@ -66,7 +66,8 @@ public class SimpleServer {
 				System.out.println("Packets Sent");
 
 				//Listens for a message from the client to see if it is done sending packets
-				if ((inReader.readLine()).equals("DONE")) {
+				if ((inReader.readLine()).equals("FINISHED")) {
+					System.out.println("All packets sent");
 					break;
 				}
 
