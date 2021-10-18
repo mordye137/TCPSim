@@ -1,16 +1,10 @@
 public class Packet {
-    public int index, total;
+    public int index;
     public String data;
 
     public Packet(int index, String data) {
         this.index = index;
         this.data = data;
-    }
-
-    public Packet(int index, String data, int total) {
-        this.index = index;
-        this.data = data;
-        this.total = total;
     }
 
     public int toStringIndex() {
@@ -20,8 +14,5 @@ public class Packet {
     public String toStringData() {
         return data;
     }
-
-    public int toStringTotal(){return total;}
-
 
 }

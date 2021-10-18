@@ -1,58 +1,57 @@
+import javax.swing.*;
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class SimpleClient {
     public static void main(String[] args) throws IOException {
-        
-		// Hardcode in IP and Port here if required
+
     	args = new String[] {"127.0.0.1", "30121"};
-    	
-        if (args.length != 2) {
-            System.err.println(
-                "Usage: java EchoClient <host name> <port number>");
-            System.exit(1);
-        }
 
         String hostName = args[0];
         int portNumber = Integer.parseInt(args[1]);
+        Set<Integer> indexesReceived = new HashSet<>();
 
         try (
             Socket clientSocket = new Socket(hostName, portNumber);
             PrintWriter outWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader inReader= new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            BufferedReader inReader= new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
         ) {
-            String userInput;
+
 			String serverResponse;
             ArrayList<String> message = new ArrayList<>();
 
             while (true) {
 
-
+                //Gets the first response index from the server
 				serverResponse = inReader.readLine();
 
-                if (serverResponse.equals("DONE")) {
-                    if (stringComplete(Integer.parseInt(serverResponse = inReader.readLine()), message.toArray().length)) {
-                        System.out.println("I AM DONE");
+                //Checks to see if the index is -1, which indicates the last packet
+                if (Integer.parseInt(serverResponse) < 0) {
+                    //Checks if the set of indexes is equal to the target size
+                    if (indexesReceived.size() >= Integer.parseInt(inReader.readLine())) {
+                        //If message is complete the client tells the server it is done and prints the message
+                        System.out.println("All packets have been received. Here is your message:");
                         outWriter.println("FINISHED");
-                        System.out.println(message);
+                        System.out.println(String.join(" ", message));
                         break;
                     }
-
-                    outWriter.println("Need more packets");
-
+                    else {
+                        //If message is not complete the client requests more packets
+                        outWriter.println("Need more packets");
+                    }
                 }
-                else{
+                else
+                {
                     int index = Integer.parseInt(serverResponse);
                     String packetData = inReader.readLine();
-                    if (index > message.size())
+                    //Checks to see if the index for the string exists yet. If not, the client calls the grow method
+                    //which grows the list to fit the index
+                    if (index >= message.size())
                         growList(message, index);
                     message.set(index, packetData);
-
-                    System.out.println(message);
+                    //Adds the index received to a set to track all received packets
+                    indexesReceived.add(index);
                 }
             }
 
@@ -66,16 +65,12 @@ public class SimpleClient {
         } 
     }
 
-    private static boolean stringComplete(int finalPacketData, int actualSize){
-        return finalPacketData == actualSize;
-    }
-
+    //Method to grow the list to fit the index
     private static void growList(ArrayList<String> list, int index){
         int sizeToGrow = index - list.size();
-        for (int i = list.size() - 1; i <= index + 1 ; i++) {
+        for (int i = 0; i <= sizeToGrow; i++) {
             list.add(" ");
         }
-
     }
 
 }
